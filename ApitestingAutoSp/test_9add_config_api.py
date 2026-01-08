@@ -63,11 +63,11 @@ def test_save_and_verify_ai_center_configuration():
         # Simple fix: Handle it as text, not JSON
         print(f"\n🔍 Raw API Response: {response_text}")
         
-        # Just check if "Irumtestenv2" is in the response
-        if "Irumtestenv2" in response_text:
-            print("✅ Irumtestenv2 configuration found in response")
+        # Just check if "Irumtestenv3" is in the response
+        if "Irumtestenv3" in response_text:
+            print("✅ configuration found in response")
         else:
-            print("❌ Irumtestenv2 configuration not found")
+            print("❌ configuration not found")
 
 if __name__ == "__main__":
     test_save_and_verify_ai_center_configuration()

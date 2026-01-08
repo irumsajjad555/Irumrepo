@@ -99,7 +99,7 @@ def create_process_for_robot(robot_name):
         print(f"   ✅ Configuration applied")
         time.sleep(2)
         
-                       # 3. UPLOAD PACKAGE - USING EXACT FORMAT FROM MANUAL REQUEST
+        # 3. UPLOAD PACKAGE - USING EXACT FORMAT FROM MANUAL REQUEST
         print(f"   3. Uploading package...")
         
         if not os.path.exists(ROBOT_FILE):
@@ -162,50 +162,119 @@ def create_process_for_robot(robot_name):
             if upload_response2.status != 200:
                 return False
         
-        # ========== SUCCESS - ADD THIS ==========
+        # ========== SUCCESS ==========
         print(f"   4. Process creation complete...")
         print(f"   🔗 Process URL: {BASE_URL}/job/{JENKINS_FOLDER}/job/{process_name}")
-        return True  # ← THIS MUST BE INSIDE THE FUNCTION
-        # ========================================
+        return True
 
-# ========== ROBOT CREATION ==========
+# ========== NEW ROBOT CREATION (FIXED) ==========
 def create_robot(robot_number):
-    robot_name = f"robot{robot_number}"
+    """Create robot with simple name like myrobot1, myrobot2"""
+    robot_name = f"myrobot{robot_number}"
     print(f"🤖 Creating Robot: {robot_name}")
     
     with sync_playwright() as p:
+        # Login
         req = p.request.new_context(base_url=BASE_URL)
         login = req.post("/api/auth/login", 
                        data={"username": SUPERADMIN_USERNAME, "password": SUPERADMIN_PASSWORD})
         token = login.json()["token"]
         
+        # Auth request
         auth = p.request.new_context(
             base_url=BASE_URL,
             extra_http_headers={"Authorization": f"Bearer {token}"}
         )
         
-        url = f"/machine/create?name={robot_name}&envName={ENVIRONMENT_NAME}&licenseId={ATTENDED_LICENSE}"
-        response = auth.post(url)
+        # Generate robot and environment names
+        env_robot_name = f"{ENVIRONMENT_NAME}_{robot_name}"
         
-        if response.status == 200:
-            print(f"✅ Robot '{robot_name}' created")
+        # Create JSON payload as per DevOps instructions
+        payload = {
+            "name": env_robot_name,
+            "nodeDescription": json.dumps({
+                "environment": ENVIRONMENT_NAME,
+                "robot": {},
+                "description": ""
+            }),
+            "remoteFS": "C:/",
+            "labelString": f"{robot_name} processTrayMonitoring:false {env_robot_name}:{robot_name}",
+            "nodeProperties": {
+                "stapler-class-bag": "true",
+                "hudson-slaves-EnvironmentVariablesNodeProperty": {
+                    "env": []
+                },
+                "hudson-tools-ToolLocationNodeProperty": {
+                    "locations": {
+                        "key": "hudson.plugins.git.GitTool$DescriptorImpl@Default",
+                        "home": ""
+                    }
+                }
+            },
+            "launcher": {
+                "stapler-class": "hudson.slaves.JNLPLauncher",
+                "$class": "hudson.slaves.JNLPLauncher",
+                "workDirSettings": {
+                    "disabled": True,
+                    "workDirPath": "",
+                    "internalDir": "remoting",
+                    "failIfWorkDirIsMissing": False
+                },
+                "webSocket": True,
+                "tunnel": "",
+                "vmargs": ""
+            }
+        }
+        
+        # Send request as form-data
+        response = auth.post(
+            "/sendPostRequest",
+            params={
+                "url": f"/computer/doCreateItem?name={env_robot_name}",
+                "type": "hudson.slaves.DumbSlave",
+                "title": f"creating new robot {env_robot_name}"
+            },
+            multipart={
+                "json": json.dumps(payload)
+            }
+        )
+        
+        print(f"   Environment: {ENVIRONMENT_NAME}")
+        print(f"   Robot Name: {robot_name}")
+        print(f"   Full Node Name: {env_robot_name}")
+        print(f"   Status: {response.status}")
+        
+        if response.status in [200, 302]:
+            print(f"✅ Robot '{robot_name}' created successfully!")
+            
+            # Also assign license
+            assign_license_url = f"/machine/create?name={robot_name}&envName={ENVIRONMENT_NAME}&licenseId={ATTENDED_LICENSE}"
+            license_response = auth.post(assign_license_url)
+            
+            if license_response.status == 200:
+                print(f"✅ License assigned to robot '{robot_name}'")
+            else:
+                print(f"⚠️ Could not assign license: {license_response.status}")
+            
             return robot_name
         else:
-            print(f"❌ Robot creation failed")
+            print(f"❌ Robot creation failed: {response.text()}")
             return None
 
 # ========== MAIN FLOW ==========
 def create_robot_and_process(robot_number):
     print("\n" + "="*60)
-    print(f"Creating robot{robot_number} with random process")
+    print(f"Creating myrobot{robot_number} with random process")
     print("="*60)
     
+    # 1. Create robot with simple name
     robot_name = create_robot(robot_number)
     if not robot_name:
         return False
     
     time.sleep(2)
     
+    # 2. Create process for that robot
     success = create_process_for_robot(robot_name)
     
     if success:
@@ -221,16 +290,17 @@ def create_robot_and_process(robot_number):
 
 # ========== TEST FUNCTION ==========
 def test_create_single_robot_process():
-    robot_number = 3
+    """Test: Create robot1, robot2, robot3... with processes"""
+    robot_number = 1  # Start with robot1
     success = create_robot_and_process(robot_number)
-    assert success, f"Failed to create robot{robot_number}"
+    assert success, f"Failed to create myrobot{robot_number}"
 
 if __name__ == "__main__":
     print("🤖 ROBOT & PROCESS CREATION")
     print("="*50)
     
     try:
-        robot_number = int(input("Enter robot number: ").strip())
+        robot_number = int(input("Enter robot number (e.g., 1 for myrobot1): ").strip())
         if robot_number >= 1:
             create_robot_and_process(robot_number)
         else:

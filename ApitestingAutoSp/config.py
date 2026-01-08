@@ -9,14 +9,14 @@ SUPERADMIN_USERNAME = "superadmin"
 SUPERADMIN_PASSWORD = "Admin@1234"
 
 # ========== ENVIRONMENT SETTINGS ==========
-ENVIRONMENT_NAME = "Irumtestenv2"  # Use this everywhere
-JENKINS_FOLDER = "Irumtestenv2"    # Same as environment name
+ENVIRONMENT_NAME = "Irumtestenv3"  # Use this everywhere
+JENKINS_FOLDER = "Irumtestenv3"    # Same as environment name
 PROCESS_TYPE = "attended"
 
 # ========== LICENSES ==========
-ATTENDED_LICENSE = "d1b434ba-7990-47bd-9a93-2e6afeeca069"
-MULTI_TASKING = "83b0cd36-19f6-4ff3-8b64-7c6db868cc91"
-TASKHUB_LICENSE = "c4c1fbdf-1edd-49bb-b101-48d9b4ead773"
+ATTENDED_LICENSE = "7d9f6199-b826-4ae6-804f-345f27f069eb"
+MULTI_TASKING = "68e04e79-17c0-42ad-a46a-94fda624ee63"
+TASKHUB_LICENSE = "8ac239de-fff4-4f7a-a873-6ca6a268ef80"
 PROCESS_LICENSE = ""  # Add if you have
 
 # ========== AI CENTER SETTINGS ==========

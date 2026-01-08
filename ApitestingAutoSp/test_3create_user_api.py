@@ -28,7 +28,7 @@ def test_create_user():
             "password": f"TestPass{unique_id}@",
             "displayName": f"TestUser{unique_id}",
             "email": f"user{unique_id}@example.com",
-            "roles": ["Irumtestenv2_admin"],
+            "roles": ["Irumtestenv3_admin"],
             "taskhubLicenseId": TASKHUB_LICENSE
         }
         
